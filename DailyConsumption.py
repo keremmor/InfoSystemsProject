@@ -7,7 +7,8 @@ def logic(index):
         return True
 
     return False
-
+# logic fonksiyonuyla istemediğim satırları atladım
+# exceldeki tablolarda günlerin olduğu sütünda datalar çok uzun bu yüzden tablolarda birbirne karışıyor
 
 data = pd.read_csv (r"C:\Users\KEREM\Downloads\archive\halfhourly_dataset\halfhourly_dataset\block_0.csv",skiprows = lambda x: logic(x))
 df = pd.DataFrame(data, columns=["tstp", "energy"])
