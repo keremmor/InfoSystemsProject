@@ -25,3 +25,4 @@ path_input_hh = "new_datas/input_tables/halfhourly/block_0_halffour.csv"
 path_output = "new_datas/output_tables/block_0_mixed.csv"
 
 convert_to_mixed_table(path_input_day, path_input_hh, path_output, first_n_rows=48)
+return path_output
