@@ -1,7 +1,10 @@
 import pandas as pd
 import datetime, time
 
-
+# çalıştırmadan önce ;
+# iki tabloyu kopyalamak istediğin boş csv file oluştur
+# bu tablonun ilk sütununa rastgele bir karakter gir (dosyada kolon olmazsa hata veriyor) ve kaydet
+# path outputa bu dosyanın pathini ver
 def convert_to_mixed_table(path_input_day, path_input_hh, path_output, first_n_rows):
     first_n_rows = first_n_rows + 1
     df_output = pd.read_csv(path_output, header=0)
