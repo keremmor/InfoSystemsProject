@@ -1,5 +1,5 @@
 import pandas as pd
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as  plt
 
 data = pd.read_csv (r"C:\Users\KEREM\Downloads\archive\daily_dataset\daily_dataset\block_0.csv")
 data = data.head()
