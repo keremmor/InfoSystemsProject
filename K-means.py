@@ -1,16 +1,17 @@
 from os import write
 from typing import Dict
 import pandas as pd
+from sklearn.utils import shuffle
 
 import datetime
 
 
 InputFileName = "block_0.csv"
-OutputFileName = "test4.csv"
+OutputFileName = "test7.csv"
 
-df_daily_path = "/Users/musabakici/Desktop/Out of software/Lectures/EE4054/Datasets/daily_dataset/"+InputFileName
+df_daily_path =     "/Users/musabakici/Desktop/Out of software/Lectures/EE4054/Datasets/daily_dataset/"+InputFileName
 df_hf_hourly_path = "/Users/musabakici/Desktop/Out of software/Lectures/EE4054/Datasets/halfhourly_dataset/"+InputFileName
-df_output_path = "/Users/musabakici/Desktop/Out of software/Lectures/EE4054/Datasets/dfOut/"+OutputFileName
+df_output_path =    "/Users/musabakici/Desktop/Out of software/Lectures/EE4054/Datasets/dfOut/"+OutputFileName
 df_processed_path = "/Users/musabakici/Desktop/Out of software/Lectures/EE4054/Datasets/dfOut/"+OutputFileName
 
 
@@ -157,6 +158,20 @@ end_date_daily = '2012-11-30'
 
 df__daily = read_dataframe(df_daily_path)
 
+
+import pathlib
+
+cur_path = pathlib.Path(__file__).parent.resolve()
+
+import os.path
+
+if os.path.isfile(df_output_path) is False:
+        
+    df_hourly_to_be_coverted = read_dataframe(df_hf_hourly_path)
+    converted_df_hourly = convert_to_be_with_day_feature(df_hourly_to_be_coverted)
+    write_out_the_given_dataframe(converted_df_hourly,df_output_path)
+
+
 _df_ = read_dataframe(df_processed_path)
 
 LenOfHouseIds, HouseIds = countHouseNumber(_df_)
@@ -175,8 +190,9 @@ for i in HouseIds[:30]:
     except:
         print(cc,' The data does not exist for ',i," between given interval ",start_date_daily," : ",end_date_daily)
 
-print(transformed_data)
-
+print("Transformed Data : ",transformed_data)
+transformed_data = shuffle(transformed_data)
+print("Shuffled Transformed Data : ",transformed_data)
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
@@ -187,6 +203,7 @@ clabels = []
 
 print("123...")
 
+
 scaler = StandardScaler()
 scaled_features = scaler.fit_transform(transformed_data)
 
@@ -194,7 +211,7 @@ scaled_features = scaler.fit_transform(transformed_data)
 
 kmeans = KMeans(
     init="random",
-    n_clusters=3,#    n_clusters=3,
+    n_clusters=4,#    n_clusters=3,
     n_init=100,
     max_iter=1000,
     random_state=42
@@ -220,5 +237,8 @@ for i in range(len(transformed_data)):
     
     else :
         plt.plot(transformed_data[i][0],transformed_data[i][1],'yo')
+
+plt.xlabel('Peak Load Time')
+plt.ylabel('Total consumed Energy (kW)')
 
 plt.show()
