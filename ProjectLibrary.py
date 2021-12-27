@@ -5,6 +5,10 @@ from sklearn import preprocessing
 from sklearn import neighbors, datasets
 import numpy as np
 from matplotlib.colors import ListedColormap
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+import os.path
+import pathlib
 
 
 def get_specific_time_interval(household, start_date, end_date, df):
@@ -161,34 +165,39 @@ def plot_labeled_data(transformed_data, labels_):
         elif labels_[i] == 0:
             plt.plot(transformed_data[i][0], transformed_data[i][1], 'ro')
         elif labels_[i] == 2:
-            plt.plot(transformed_data[i][0], transformed_data[i][1], 'co')
-        elif labels_[i] == 3:
             plt.plot(transformed_data[i][0], transformed_data[i][1], 'mo')
+        elif labels_[i] == 3:
+            plt.plot(transformed_data[i][0], transformed_data[i][1], 'yo')
 
         else:
-            plt.plot(transformed_data[i][0], transformed_data[i][1], 'yo')
+            plt.plot(transformed_data[i][0], transformed_data[i][1], 'co')
 
     plt.xlabel('Peak Load Time')
     plt.ylabel('Total consumed Energy (kW)')
+    plt.title("Plot Before new household added")
 
     plt.show()
 
 
-def predict_class_of_new_household(transformed_data_list, label_list, peak_time, energy):
+def predict_class_of_new_household(df, peak_time, energy):
     """
     This function takes input transformed data list and label list which come from Kmeans.py as output.
     And also takes average monthly energy of a house and peak time of household and makes a predicition about the class of new added household.
     It returns the predicted class of a household
+    X data
+    y class
     """
-    df1 = pd.DataFrame(label_list,
-                       columns=['label'])
-
-    df2 = pd.DataFrame(transformed_data_list,
-                       columns=['peak_hour', 'average_energy'])
-
-    df_result = pd.concat([df2, df1], axis=1, join='inner')
-    X = df_result.iloc[:, :-1].values
-    y = df_result.iloc[:, 2].values
+    # df1 = pd.DataFrame(label_list,
+    #                    columns=['label'])
+    #
+    # df2 = pd.DataFrame(transformed_data_list,
+    #                    columns=['peak_hour', 'average_energy'])
+    #
+    # df_result = pd.concat([df2, df1], axis=1, join='inner')
+    X = df.iloc[:, [1, 2]].values
+    y = df.iloc[:, 3].values
+    print(X)
+    print(y)
     h = .02
 
     n_neighbors = 6
@@ -199,42 +208,33 @@ def predict_class_of_new_household(transformed_data_list, label_list, peak_time,
 
     if dataClass == 0:
         print('Prediction: ', dataClass)
-        return dataClass
+        return 0
     elif dataClass == 1:
         print('Prediction: ', dataClass)
-        return dataClass
+        return 1
     elif dataClass == 2:
         print('Prediction: ', dataClass)
-        return dataClass
+        return 2
     elif dataClass == 3:
         print('Prediction: ', dataClass)
-        return dataClass
+        return 3
 
     else:
         print('Prediction: ', dataClass)
-        return dataClass
+        return 4
 
 
-def df_merge_knn(df1: pd.DataFrame, df2: pd.DataFrame, label_list, transformed_data_list):
-    """
-        This function takes 2 dataframes and 2 list as input.It concatenates the df1 to df2.
-        This function is specific for KNN.py
-    """
-
-    df_result = pd.concat([df2, df1], axis=1, join='inner')
-    return df_result
-
-
-def append_new_item_to_lists(transformed_data_list, label_list, prediction_of_hhold, peak_time, energy):
+def append_new_item_to_lists(df, prediction_of_hhold, peak_time, energy):
     """
        It appends the peak time and energy of new added household to the new list.
        It is made for K-NearestNeighbour.py
        It returns the 2 lists
        """
-    label_list.extend(prediction_of_hhold)
-    transformed_data_list.append([peak_time, energy])
+    dict = {'ID': 'New Household', 'peak_hour': peak_time, 'average_energy': energy, 'Class': prediction_of_hhold}
 
-    return label_list, transformed_data_list
+    df = df.append(dict, ignore_index=True)
+
+    return df
 
 
 def knn_classification(df: pd.DataFrame):
@@ -242,12 +242,12 @@ def knn_classification(df: pd.DataFrame):
        This function makes the KNN classification
        """
     n_neighbors = 6
-    X = df.iloc[:, :-1].values
-    y = df.iloc[:, 2].values
+    X = df.iloc[:, [1, 2]].values
+    y = df.iloc[:, 3].values
     h = .02
 
-    cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#00AAFF', "#ad40ff", "#ffff00"])
-    cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#00AAFF', "#ad40ff", "#ffff00"])
+    cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#00AAFF', "#ad40ff", "#ffff00","#00FF00","#800000"])
+    cmap_bold = ListedColormap(['#FF0000', '#0000FF', '#FF00FF', "#FFFF00", "#00FFFF","#00FF00","#800000"])
 
     clf = neighbors.KNeighborsClassifier(n_neighbors, weights='distance')
     clf.fit(X, y)
@@ -265,4 +265,110 @@ def knn_classification(df: pd.DataFrame):
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=cmap_bold)
 
     plt.title("Classification of new added household using KNN (k = %i)" % (n_neighbors))
+    plt.xlabel('Peak Load Time')
+    plt.ylabel('Total consumed Energy (kW)')
     plt.show()
+
+
+def kmeans_clustering(df_daily_path, df_hh_path, df_output_path, df_processed_path, start_date_daily, end_date_daily):
+    df__daily = read_dataframe(df_daily_path)
+
+    cur_path = pathlib.Path(__file__).parent.resolve()
+
+    if os.path.isfile(df_output_path) is False:
+        df_hourly_to_be_coverted = read_dataframe(df_hh_path)
+        converted_df_hourly = convert_to_be_with_day_feature(
+            df_hourly_to_be_coverted)
+        write_out_the_given_dataframe(converted_df_hourly, df_output_path)
+
+    _df_ = read_dataframe(df_processed_path)
+
+    LenOfHouseIds, HouseIds = countHouseNumber(_df_)
+
+    transformed_data = []
+    cc = 0
+    for i in HouseIds[:50]:
+        cc += 1
+        try:
+            t_time = take_max_load_time_of_days(
+                i, _df_, start_date_daily, end_date_daily)
+            e_sum = get_average_consumed_energy_of_days(
+                df__daily, i, start_date_daily, end_date_daily)
+            # print(cc, ' Max load time of ', i, " is ", t_time,
+            # " and avrg consumed energy is:", e_sum)
+            time_t = transform_datetime_to_decimal(t_time)
+            transformed_data.append([time_t, round(e_sum, 2)])
+        except:
+            # print(cc, ' The data does not exist for ', i,
+            #       " between given interval ", start_date_daily, " : ", end_date_daily)
+            HouseIds.remove(i)
+
+    print("Transformed Data : ", transformed_data)
+    # transformed_data = shuffle(transformed_data)
+    print("Shuffled Transformed Data : ", transformed_data)
+
+    points = []
+    clabels = []
+
+    print("123...")
+
+    scaler = StandardScaler()
+    scaled_features = scaler.fit_transform(transformed_data)
+
+    kmeans = KMeans(
+        init="random",
+        n_clusters=7,
+        n_init=100,
+        max_iter=1000,
+        random_state=42
+    )
+
+    kmeans.fit(transformed_data)
+
+    # The lowest SSE value
+    # print(kmeans.inertia_)
+
+    # Final locations of the centroid
+    # print(kmeans.cluster_centers_)
+
+    # The number of iterations required to converge
+    # print(kmeans.n_iter_)
+    # print(kmeans.labels_)
+
+    # for i in range(len(transformed_data)):
+    #     if kmeans.labels_[i] == 1:
+    #         plt.plot(transformed_data[i][0], transformed_data[i][1], 'bo')
+    #     elif kmeans.labels_[i] == 0:
+    #         plt.plot(transformed_data[i][0], transformed_data[i][1], 'ro')
+    #     elif kmeans.labels_[i] == 2:
+    #         plt.plot(transformed_data[i][0], transformed_data[i][1], 'co')
+    #     elif kmeans.labels_[i] == 3:
+    #         plt.plot(transformed_data[i][0], transformed_data[i][1], 'mo')
+    #
+    #     else:
+    #         plt.plot(transformed_data[i][0], transformed_data[i][1], 'yo')
+    #
+    # plt.xlabel('Peak Load Time')
+    # plt.ylabel('Total consumed Energy (kW)')
+    #
+    # plt.show()
+    return transformed_data, HouseIds, kmeans.labels_
+
+
+def merge_df_for_knn(df_daily_path, df_hf_hourly_path, df_output_path,
+                     df_processed_path, start_date_daily, end_date_daily):
+    data, houseids, labels = kmeans_clustering(df_daily_path, df_hf_hourly_path, df_output_path,
+                                               df_processed_path, start_date_daily, end_date_daily)
+
+    df = pd.DataFrame(houseids,
+                      columns=['ID'])
+
+    df1 = pd.DataFrame(labels,
+                       columns=['Class'])
+
+    df2 = pd.DataFrame(data,
+                       columns=['peak_hour', 'average_energy'])
+
+    df_result = pd.concat([df, df2, df1], axis=1, join='inner')
+
+    return df_result
