@@ -260,14 +260,15 @@ def knn_classification(df: pd.DataFrame):
     Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
 
     Z = Z.reshape(xx.shape)
-    plt.figure()
+    a=plt.figure()
 
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=cmap_bold)
 
-    plt.title("Classification of new added household using KNN (k = %i)" % (n_neighbors))
+    plt.title("K-Nearest Neighbour Classification (number of neighbours = %i)" % (n_neighbors))
     plt.xlabel('Peak Load Time')
     plt.ylabel('Total consumed Energy (kW)')
     plt.show()
+
 
 
 def kmeans_clustering(df_daily_path, df_hh_path, df_output_path, df_processed_path, start_date_daily, end_date_daily):
@@ -317,7 +318,7 @@ def kmeans_clustering(df_daily_path, df_hh_path, df_output_path, df_processed_pa
 
     kmeans = KMeans(
         init="random",
-        n_clusters=7,
+        n_clusters=5,
         n_init=100,
         max_iter=1000,
         random_state=42
