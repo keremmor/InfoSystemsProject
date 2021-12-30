@@ -260,7 +260,7 @@ def knn_classification(df: pd.DataFrame):
     Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
 
     Z = Z.reshape(xx.shape)
-    a=plt.figure()
+    # a=plt.figure()
 
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=cmap_bold)
 
@@ -268,6 +268,7 @@ def knn_classification(df: pd.DataFrame):
     plt.xlabel('Peak Load Time')
     plt.ylabel('Total consumed Energy (kW)')
     plt.show()
+
 
 
 
