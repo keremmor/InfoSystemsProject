@@ -236,6 +236,35 @@ def append_new_item_to_lists(df, prediction_of_hhold, peak_time, energy):
 
     return df
 
+def result_of_offers(df: pd.DataFrame,number_of_classes=6):
+    _df_ = None
+    initialized_=False
+    for i in range(5):
+        _df = df.loc[df['Class']==i]
+        change =2 # indicates the hour that the houses will change their peak_hour as much as this number
+
+        number_of_rows = _df.shape[0] # The number of household the class has
+        accepted_household_percentage = round((4/10) * number_of_rows) # 
+        if _df['peak_hour'].mean() >= 15: # If the peak hour average of a class is after 15.00 o'clock then change will be neagative
+            change=-2 
+
+        top_df = _df.iloc[:accepted_household_percentage] # First %40 ?(can change) percentage of a class
+       
+        top_df['peak_hour']+=change # Changing the peak hours
+        bottom_df= _df.iloc[accepted_household_percentage:] # Not accepted houses in a class
+
+        if not initialized_: # This condition is used just to initialize a dataFrame
+            _df_ = top_df
+            initialized_=True
+        else:
+            _df_ = pd.concat([_df_,top_df]) # Concatenate the updated data
+        print("##")
+        _df_ = pd.concat([_df_,bottom_df])  # Concatenate the rest of unaccepted households data
+        print(top_df)
+    print("=>> ",_df_)
+    print("###$$#$$#$#$#$")
+    
+    return _df_
 
 def knn_classification(df: pd.DataFrame):
     """
